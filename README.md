@@ -14,7 +14,55 @@
   <img src="http://imglf6.nosdn.127.net/img/Z281REhERnhNZlhqRGlHd3BXK2RxRC90YzgrbXlhTUw1SHhIZFd6QnVIK2Y3NkhVVERVNFJ3PT0.png?imageView&thumbnail=500x0&quality=96&stripmeta=0"  />
 
  
-#### 主要的改进方案：采用Adapter模式  ，将动作ThrowUFO变成两种实现方式
+#### 主要的改进方案：采用Adapter模式  ，将动作ThrowUFO变成两种实现方式  
+物理变化：  
+```  
+public void throwUFO (List<GameObject> usingUFO){
+		_usingUFO=usingUFO;
+		Scene.getScene().reset(Controller.getController().round);
+		for(int i=0;i<_usingUFO.Count;i++){//向图中扔飞碟,设置方向，大小，颜色等属性
+			usingUFO [i].transform.position = throwPosition;
+			Rigidbody rigibody;
+			rigibody = usingUFO[i].GetComponent<Rigidbody>();
+			rigibody.WakeUp();
+			rigibody.useGravity = true;
+			rigibody.AddForce(throwDirection, ForceMode.Impulse);
+		}
+	}
+``` 
+
+另一种transform变化：  
+``` 
+public class CCThrowUFO : SSAction{
+	private Vector3 throwPosition;
+	private Vector3 throwDirection;
+	private float gravity=9.8f;
+
+	public static CCThrowUFO GetSSAction()  
+	{  
+		CCThrowUFO action = ScriptableObject.CreateInstance<CCThrowUFO>();  
+		return action;  
+	}  
+	void Start () {
+
+		throwDirection = new Vector3(3f, 10f, 15f);
+		throwPosition = new Vector3 (-2f, 1f, 0);
+		this.gameobject.transform.position = throwPosition;
+	}
+	void Update () {
+		Debug.Log ("CCActionManager  throw UFO  destroy: "+this.destroy);
+		Vector3 temp=new Vector3(Time.deltaTime * throwDirection.x , 
+			Time.deltaTime*(throwDirection.y-gravity*Time.deltaTime) ,Time.deltaTime*throwDirection.z);
+		this.gameobject.transform.position += temp;
+
+		if(this.gameobject.transform.position.y < -30) {
+			this.destroy = true;  
+			this.callback.SSActionEvent(this);  
+		}
+	
+	}
+}
+```
 
 #### 源码：  
 
